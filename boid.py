@@ -1,17 +1,42 @@
 from tools import *
 
 class boid:
-    def __init__(self, x=0, y=0, i=0, j=0):
+    def __init__(self, x=0, y=0, i=0, j=0,h, w):
         # postiion vector
         self.position = Vector(x,y)
-        
-
+        #height and width for pygame arena for ato avoidance in seperation method
+        self.h = h
+        self.w = w
+        self.acceleration = Vector()
         # vecolicty 
         self.velocity = Vector(i,j)
 
+        self.max_speed = 5
+
         #radius defines our threshold for closeness of other boids, as used in seperation
         self.rad = 40
+    
+    
+    
+    def behaviour(self, boids):
+        self.acceleration.reset()
+
+        
+        avoid = self.separation(boids)
+       
+        self.acceleration.add(avoid)
+
+    
+        coh = self.cohesion(boids)
+        
+        self.acceleration.add(coh)
+
+    
+        align = self.alignment(boids)
+       
+        self.acceleration.add(align)
     #defining key behaviours here
+
 
     def seperation(self, boids):
         """
@@ -41,9 +66,33 @@ class boid:
                 #increasing total amount of moves by 1
                 total += 1
 
+        
+        # checkign for phygame edge of screen
+        coords_tuple = self.position.parseToInt()
+        if  coords_tuple[1] - self.rad == 0:
+            edge_coords = Vector(coords_tuple[0], 0)
+            raw_dir_away = SubVectors(b,self)
+                #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
+                scaled_dir_away = raw_dir_away/(distance**2)
+                #adding the scaled vector to total steering direction
+                steering.add(scaled_dir_away)
+                #increasing total amount of moves by 1
+                total += 1
+
+        
+
+        if coords_tuple + self.rad == self.h:
         #the above will have added movments scaled by importance to the steering vector, 
 
-        return (steering/total).Unitv()
+        if total > 0:
+            steering = steering / total
+            #avrg vector to steer away from all
+            steering.unitv()
+            steering = steering * self.max_speed
+            steering = steering - self.velocity
+            #steering.limit(self.max_length)
+
+        return steering
 
 
     def alignment(self, boids):
@@ -90,6 +139,10 @@ class boid:
             temp = avg - self.position 
             #unit vector of direction to move to get to average coordinates of all boids
             temp.unitv()
+
+            temp *= self.max_speed
+            temp -= self.velocity
+
 
 
 
