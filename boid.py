@@ -24,23 +24,33 @@ class boid:
     
     def behaviour(self, boids):
        # print(self.velocity.parseToInt())
+
+       #weights
+
+        wCoh = 0.5
+        wAli = 4
+        wSep = 2
+        wCohA = 2
         
         self.acceleration.reset()
 
         
-        avoid = self.seperation(boids)
+        avoid = self.seperation(boids) * wSep
        
         self.acceleration.add(avoid)
 
         #print("at cohesion")
-        coh = self.cohesion(boids)
+        coh = self.cohesion(boids) * wCoh
         #print(coh)
         self.acceleration.add(coh)
 
+        av = self.collision_avoidance(boids) * wCohA
+        self.acceleration.add(av)
     
-        align = self.alignment(boids)
+        align = self.alignment(boids) * wAli
        
         self.acceleration.add(align)
+
         self.velocity += self.acceleration # this changing direction 
         #print(align, coh, avoid)
         if self.velocity.magnitude() > self.max_speed:
@@ -71,7 +81,8 @@ class boid:
             if 0 < distance < self.rad+5:  # Check for closeness
                 # Vector pointing away from the nearby boid
                 raw_dir_away = self.position - b.position
-                scaled_dir_away = raw_dir_away / (distance ** 2)  # Inverse distance weighting
+                clamped_distance = max(distance, 2.0)  # Prevent very small distances
+                scaled_dir_away = raw_dir_away / (clamped_distance ** 2)
                 steering.add(scaled_dir_away)
                 total += 1
 
@@ -99,6 +110,34 @@ class boid:
             steering *= self.max_speed
         return steering
 
+    def collision_avoidance(self, boids):
+        """
+        Avoids colliding with other boids that are in the same position or very close.
+        If two boids are very close or at the same position, it applies a repulsive force.
+        """
+        steering = Vector()
+        total = 0
+        threshold = 2  # This is the minimum distance for considering a collision
+
+        for b in boids:
+            if b == self:
+                continue
+
+            # Check if the boids are in the same position or very close
+            distance = getDistance(self.position, b.position)
+            if distance < threshold:  # If boids are too close (e.g., almost the same position)
+                # Apply a repulsive force in the opposite direction of the other boid
+                raw_dir_away = self.position - b.position  # Direction away from the other boid
+                steering.add(raw_dir_away)  # Add this force to the total steering
+                total += 1
+
+        # If we have any collisions, normalize and apply the steering force
+        if total > 0:
+            steering = steering / total
+            steering.unitv()  # Normalize the steering vector
+            steering *= self.max_speed  # Set the magnitude to max speed
+            
+        return steering
 
 
     def alignment(self, boids):
@@ -112,7 +151,7 @@ class boid:
             if b == self:
                 continue
             distance = getDistance(self.position, b.position)
-            if distance < self.rad+50:
+            if distance < self.rad+50 and b.velocity.unitReturn() is not None:
                 tmp = b.velocity.unitReturn()
                 steering.add(tmp)  # Add neighbor's normalized velocity
                 total += 1

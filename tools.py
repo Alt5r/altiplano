@@ -40,6 +40,9 @@ class Vector:
 		self.x = self.x + a.x
 		self.y = self.y + a.y
 
+	def scale(self, a):
+		self.x *= a
+		self.y *= a
 	def parseToInt(self):
 		return (int(self.x), int(self.y))
 
