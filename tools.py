@@ -49,10 +49,18 @@ class Vector:
 	def unitv(self):
 		mag = self.magnitude()
 		if not (mag == 0 ):
-			self = self/mag
+			self.x = self.x/mag
+			self.y = self.y/mag
+
+	def unitReturn(self):
+		mag = self.magnitude()
+		if not (mag == 0 ):
+			
+			return Vector(self.x/mag, self.y/mag)
 	def Unitv(self):
 		mag = self.magnitude()
 		if mag != 0:
+			
 			return Vector(self.x/mag, self.y/mag)
 		else:
 			return Vector(1, 1)
