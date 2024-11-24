@@ -1,5 +1,5 @@
 from tools import *
-
+from random import *
 class boid:
     def __init__(self, x=0, y=0, i=0, j=0, h=600, w=800):
         # postiion vector
@@ -8,14 +8,18 @@ class boid:
         self.h = h
         self.w = w
         self.acceleration = Vector()
+        self.colour = (randint(0,255),randint(0,255),randint(0,255))
         # vecolicty 
         self.velocity = Vector(i,j)
 
         self.max_speed = 5
 
         #radius defines our threshold for closeness of other boids, as used in seperation
-        self.rad = 10
+        self.rad = 7
     
+    def getColour(self):
+        return self.colour
+        
     
     
     def behaviour(self, boids):
@@ -37,8 +41,8 @@ class boid:
         align = self.alignment(boids)
        
         self.acceleration.add(align)
-
-        print(align, coh, avoid)
+        self.velocity += self.acceleration # this changing direction 
+        #print(align, coh, avoid)
         if self.velocity.magnitude() > self.max_speed:
             self.velocity.unitv()
             self.velocity *= self.max_speed
@@ -46,7 +50,7 @@ class boid:
         
         #self.acceleration -= self.velocity
 
-        self.velocity += self.acceleration # this changing direction 
+        
 
         self.position += self.velocity #this is changing its position in accordance with velocity vector 
     #defining key behaviours here
@@ -64,7 +68,7 @@ class boid:
             if b == self:
                 continue
             distance = getDistance(self.position, b.position)
-            if 0 < distance < self.rad+50:  # Check for closeness
+            if 0 < distance < self.rad+5:  # Check for closeness
                 # Vector pointing away from the nearby boid
                 raw_dir_away = self.position - b.position
                 scaled_dir_away = raw_dir_away / (distance ** 2)  # Inverse distance weighting
@@ -102,13 +106,13 @@ class boid:
         Aligns the boid's velocity with its neighbors.
         """
         total = 0
-        steering = Vector()
+        steering = Vector(uniform(-1,1), uniform(-1,1))
 
         for b in boids:
             if b == self:
                 continue
             distance = getDistance(self.position, b.position)
-            if 0 < distance < self.rad+50:
+            if distance < self.rad+50:
                 tmp = b.velocity.unitReturn()
                 steering.add(tmp)  # Add neighbor's normalized velocity
                 total += 1
@@ -118,7 +122,7 @@ class boid:
             steering = steering / total
             steering.unitv()
             steering =  steering* self.max_speed
-            steering -= self.velocity
+            #steering -= self.velocity
         return steering
 
 

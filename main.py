@@ -20,10 +20,10 @@ BALL_COLOR = (100, 200, 255)
 
 boids = []
 #ball = boid(screen_width//2, screen_height//2, 3, 2, screen_height, screen_width)
-ball_radius = 10
+ball_radius = 7
 #ball_pos = ball.position()  # Start in the center
 
-for i in range(10):
+for i in range(50):
     boids.append(boid(randint(0,800), randint(0,600), randint(-2,2), randint(-2,2), screen_height, screen_width))
 print(len(boids))
 
@@ -49,7 +49,7 @@ while running:
         ball_pos = ball.getPosition().parseToInt()
 
         # Draw ball
-        pygame.draw.circle(screen, BALL_COLOR, ball_pos, ball_radius)
+        pygame.draw.circle(screen, ball.getColour(), ball_pos, ball_radius)
 
     
     # Refresh screen
