@@ -1,7 +1,7 @@
 from tools import *
 
 class boid:
-    def __init__(self, x=0, y=0, i=0, j=0,h, w):
+    def __init__(self, x=0, y=0, i=0, j=0, h=600, w=800):
         # postiion vector
         self.position = Vector(x,y)
         #height and width for pygame arena for ato avoidance in seperation method
@@ -14,27 +14,40 @@ class boid:
         self.max_speed = 5
 
         #radius defines our threshold for closeness of other boids, as used in seperation
-        self.rad = 40
+        self.rad = 10
     
     
     
     def behaviour(self, boids):
+        print(self.velocity.parseToInt())
+        self.position += self.velocity
         self.acceleration.reset()
 
         
-        avoid = self.separation(boids)
+        avoid = self.seperation(boids)
        
         self.acceleration.add(avoid)
 
-    
+        #print("at cohesion")
         coh = self.cohesion(boids)
-        
+        #print(coh)
         self.acceleration.add(coh)
 
     
         align = self.alignment(boids)
        
         self.acceleration.add(align)
+
+        print(align, coh, avoid)
+
+        self.acceleration.unitv()
+        self.acceleration *= self.max_speed
+        
+        self.acceleration -= self.velocity
+
+        self.velocity += self.acceleration # this changing direction 
+
+        self.position += self.velocity #this is changing its position in accordance with velocity vector 
     #defining key behaviours here
 
 
@@ -58,7 +71,7 @@ class boid:
                 #determinign a flockmate is too close, and direction to move away from it
 
                 #hopefully how to get from self to b, therefore using direction as acceleration on a should move away from b
-                raw_dir_away = SubVectors(b,self)
+                raw_dir_away = SubVectors(b,self.position)
                 #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
                 scaled_dir_away = raw_dir_away/(distance**2)
                 #adding the scaled vector to total steering direction
@@ -67,22 +80,61 @@ class boid:
                 total += 1
 
         
-        # checkign for phygame edge of screen
+        # checkign for phygame edge of screen HEIGHT
         coords_tuple = self.position.parseToInt()
-        if  coords_tuple[1] - self.rad == 0:
+        if  coords_tuple[1] - (self.rad+15) == 0:
+            # + 15 here is "vision" for where the border is rather than it touchign it and possible going 
+            #over if too close and many boids surrounding it 
+
             edge_coords = Vector(coords_tuple[0], 0)
-            raw_dir_away = SubVectors(b,self)
-                #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
-                scaled_dir_away = raw_dir_away/(distance**2)
-                #adding the scaled vector to total steering direction
-                steering.add(scaled_dir_away)
-                #increasing total amount of moves by 1
-                total += 1
+            raw_dir_away = SubVectors(edge_coords,self.position)
+            #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
+            scaled_dir_away = raw_dir_away/(distance**2)
+            #adding the scaled vector to total steering direction
+            steering.add(scaled_dir_away)
+            #increasing total amount of moves by 1
+            total += 1
 
         
 
-        if coords_tuple + self.rad == self.h:
-        #the above will have added movments scaled by importance to the steering vector, 
+        if coords_tuple[1] + (self.rad+15) == self.h:
+            #the above will have added movments scaled by importance to the steering vector, 
+            edge_coords = Vector(coords_tuple[0], self.h)
+            raw_dir_away = SubVectors(edge_coords,self.position)
+            #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
+            scaled_dir_away = raw_dir_away/(distance**2)
+            #adding the scaled vector to total steering direction
+            steering.add(scaled_dir_away)
+            #increasing total amount of moves by 1
+            total += 1
+
+        ################################################# width
+        if  coords_tuple[0] - (self.rad+15) == 0:
+            # + 15 here is "vision" for where the border is rather than it touchign it and possible going 
+            #over if too close and many boids surrounding it 
+
+            edge_coords = Vector(0, coords_tuple[1])
+            raw_dir_away = SubVectors(edge_coords,self.position)
+            #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
+            scaled_dir_away = raw_dir_away/(distance**2)
+            #adding the scaled vector to total steering direction
+            steering.add(scaled_dir_away)
+            #increasing total amount of moves by 1
+            total += 1
+
+        if  coords_tuple[0] + (self.rad+15) == self.w:
+                    # + 15 here is "vision" for where the border is rather than it touchign it and possible going 
+                    #over if too close and many boids surrounding it 
+
+                    edge_coords = Vector(self.w, coords_tuple[1])
+                    raw_dir_away = SubVectors(edge_coords,self.position)
+                    #scale magnitude of vector to move by making it bigger if the flockmate is closer, i.e higher priority on moving away from closer neighbors
+                    scaled_dir_away = raw_dir_away/(distance**2)
+                    #adding the scaled vector to total steering direction
+                    steering.add(scaled_dir_away)
+                    #increasing total amount of moves by 1
+                    total += 1
+
 
         if total > 0:
             steering = steering / total
@@ -115,11 +167,13 @@ class boid:
                 scaled_b = b_heading/(distance**2)
                 steering += scaled_b
                 total += 1
-        
-        return (steering/total).Unitv()
+        if total > 0:
+            return (steering/total).Unitv()
+        else:
+            return Vector()
 
     
-    def cohesion(self, boids):
+    def cohesion(self, boids) -> Vector:
         """
         the desire to stay near other flockmates
         """
@@ -128,7 +182,7 @@ class boid:
         steering = Vector()
 
         for b in boids:
-            distance = getDistance(self, b)
+            distance = getDistance(self.position, b.position)
             if distance < self.rad:
                 steering.add(b.position)
                 total+=1
@@ -142,10 +196,16 @@ class boid:
 
             temp *= self.max_speed
             temp -= self.velocity
+            #print(f"{temp} is maybe none")
+            return temp
+        return Vector()
 
 
+    def getPosition(self) -> Vector:
+        return self.position
 
-
+    def setVelocity(self, i, j):
+        self.velocity = Vector(i,j)
         """
         to do: 
 
