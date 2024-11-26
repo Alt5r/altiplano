@@ -7,8 +7,8 @@ from random import randint
 pygame.init()
 
 # Screen settings
-screen_width = 800
-screen_height = 600
+screen_width = 1000
+screen_height = 1000
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Moving Ball with Velocity")
 
@@ -20,11 +20,11 @@ BALL_COLOR = (100, 200, 255)
 
 boids = []
 #ball = boid(screen_width//2, screen_height//2, 3, 2, screen_height, screen_width)
-ball_radius = 7
+ball_radius = 5
 #ball_pos = ball.position()  # Start in the center
 
-for i in range(50):
-    boids.append(boid(randint(0,800), randint(0,600), randint(-2,2), randint(-2,2), screen_height, screen_width))
+for i in range(150):
+    boids.append(boid(randint(20,1000), randint(20,1000), randint(-2,2), randint(-2,2), screen_height, screen_width))
 print(len(boids))
 
 # Main game loop
@@ -47,10 +47,10 @@ while running:
         ball.behaviour(boids)
         
         ball_pos = ball.getPosition().parseToInt()
-
+        print(ball_pos)
         # Draw ball
         pygame.draw.circle(screen, ball.getColour(), ball_pos, ball_radius)
-
+        
     
     # Refresh screen
     pygame.display.flip()

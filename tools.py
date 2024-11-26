@@ -89,12 +89,12 @@ class Vector:
 
 
 def getDistance(v1, v2):
-	d = sqrt(sqr(v2.x - v1.x) + sqr(v2.y -v1.y))
+	d = sqrt(sqr(v2.x - v1.x) + sqr(v2.y - v1.y))
 	if d != 0:
 		return d
 	else:
 		#not true distance however prevents additoanly length checks if boid is self in boids class sepertaiton
-		return 999
+		return 1
 
 def AddVectors(v1, v2):
 	return Vector(v1.x + v2.x, v1.y + v2.y)

@@ -15,10 +15,12 @@ class boid:
         self.max_speed = 5
 
         #radius defines our threshold for closeness of other boids, as used in seperation
-        self.rad = 7
+        self.rad = 5
     
     def getColour(self):
         return self.colour
+
+    
         
     
     
@@ -58,12 +60,19 @@ class boid:
             self.velocity *= self.max_speed
         
         
+        
+        
         #self.acceleration -= self.velocity
 
         
 
         self.position += self.velocity #this is changing its position in accordance with velocity vector 
+        self.randpos()
     #defining key behaviours here
+
+    def randpos(self):
+        if self.position.parseToInt() == (3, 3):
+            self.position = (randint(0,self.w), randint(0,self.h))
 
 
     def seperation(self, boids):
@@ -81,11 +90,15 @@ class boid:
             if 0 < distance < self.rad+5:  # Check for closeness
                 # Vector pointing away from the nearby boid
                 raw_dir_away = self.position - b.position
-                clamped_distance = max(distance, 2.0)  # Prevent very small distances
+                clamped_distance = max(distance, 1.0)  # Prevent very small distances
                 scaled_dir_away = raw_dir_away / (clamped_distance ** 2)
                 steering.add(scaled_dir_away)
                 total += 1
-
+            elif distance < 1:
+                # Add random nudge to resolve overlap
+                nudge = Vector(uniform(-0.5, 0.5), uniform(-0.5, 0.5)) * self.max_speed
+                steering.add(nudge)
+                total += 1
         # Edge avoidance (considering boundaries of the screen)
         coords_tuple = self.position.parseToInt()
 
