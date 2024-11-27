@@ -72,7 +72,7 @@ class boid:
 
     def randpos(self):
         if self.position.parseToInt() == (3, 3):
-            self.position = (randint(0,self.w), randint(0,self.h))
+            self.position = Vector(randint(0,self.w), randint(0,self.h))
 
 
     def seperation(self, boids):
