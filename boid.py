@@ -1,5 +1,6 @@
 from tools import *
 from random import *
+from scipy.interpolate import interp1d
 class boid:
     def __init__(self, x=0, y=0, i=0, j=0, h=600, w=800):
         # postiion vector
@@ -8,7 +9,7 @@ class boid:
         self.h = h
         self.w = w
         self.acceleration = Vector()
-        self.colour = (randint(0,255),randint(0,255),randint(0,255))
+        self.colour = (0,0,255)
         # vecolicty 
         self.velocity = Vector(i,j)
 
@@ -53,6 +54,8 @@ class boid:
        
         self.acceleration.add(align)
 
+        self.colourRed(boids)
+
         self.velocity += self.acceleration # this changing direction 
         #print(align, coh, avoid)
         if self.velocity.magnitude() > self.max_speed:
@@ -73,6 +76,18 @@ class boid:
     def randpos(self):
         if self.position.parseToInt() == (3, 3):
             self.position = Vector(randint(0,self.w), randint(0,self.h))
+
+    def colourRed(self, boids):
+        # we want to make boids more red as there are more boids around them 
+        for boid in boids:
+            if boid == self:
+                continue 
+            distance = getDistance(self.position, boid.position)
+            if distance < self.rad+25:
+                m = interp1d([0,self.rad+25],[0,255])
+                self.colour = (m(distance),0,255-m(distance))
+
+
 
 
     def seperation(self, boids):

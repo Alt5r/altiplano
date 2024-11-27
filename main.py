@@ -47,7 +47,7 @@ while running:
         ball.behaviour(boids)
         
         ball_pos = ball.getPosition().parseToInt()
-        print(ball_pos)
+        #print(ball_pos)
         # Draw ball
         pygame.draw.circle(screen, ball.getColour(), ball_pos, ball_radius)
         
@@ -56,4 +56,4 @@ while running:
     pygame.display.flip()
 
     # Frame rate
-    pygame.time.Clock().tick(60)  # Limit to 60 FPS
+    pygame.time.Clock().tick(120)  # Limit to 60 FPS
